@@ -23,7 +23,7 @@ Three ways of using CAP-VSTNet to stylize images.
 * Artistic video stylization and temporal error heatmap
 
 <div align="center">
-<img src=assets/artistic_video.webp  width=100% height=440/>
+<img src=assets/artistic_video.webp/>
 </div>
 
 
