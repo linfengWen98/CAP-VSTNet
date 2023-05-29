@@ -56,14 +56,12 @@ CUDA_VISIBLE_DEVICES=0 python video_style.py --mode photorealistic --video data/
 ``` 
 
 * `mode`: photorealistic or artistic.
-* `ckpoint`: path for model checkpoint.
+* `ckpoint`: path for the model checkpoint.
 * `video`: path for the input video or frame directory.
 * `style`: path for the style image.
 * `auto_seg`: set `True` to use segmentation model (e.g. SegFormer).
-* `content_seg` (optional): path for the manually generated content segmentation if `auto_seg=False`.
-* `style_seg` (optional): path for the manually generated style segmentation if `auto_seg=False`.
-* `fps`: video frames per second
 * `max_size`: maximum output video size of long edge.
+* `fps`: video frames per second
 
 Set `--auto_seg True` to automatically generate semantic segmentation for better stylization effects. For more information on how to automatically or manually generate semantic segmentation, please refer to [here](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md) (where we get inspiration and benefit a lot from).
 
