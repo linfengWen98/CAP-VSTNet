@@ -5,7 +5,7 @@
 ![](assets/teaser.webp)
 
 ## Usage
-Three ways of using CAP-VSTNet to stylize images.
+Three ways of using CAP-VSTNet to stylize image/video.
 * Style transfer without using semantic masks.
 * Style transfer with manually generated semantic masks.
 * Style transfer with automatically generated semantic masks.
@@ -121,6 +121,16 @@ An example of 4K images stylization
 </p>
 
 
+## Citation
+```
+@inproceedings{wen2023cap,
+  title={CAP-VSTNet: Content Affinity Preserved Versatile Style Transfer},
+  author={Wen, Linfeng and Gao, Chengying and Zou, Changqing},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={18300--18309},
+  year={2023}
+}
+```
 
 ## Acknowledgement
 We thank the great work [PhotoWCT](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md), [LinearWCT](https://github.com/sunshineatnoon/LinearStyleTransfer) and [ArtFlow](https://github.com/pkuanjie/ArtFlow).
