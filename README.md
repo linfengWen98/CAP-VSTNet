@@ -38,7 +38,7 @@ Download the pre-trained weight ([google drive](https://drive.google.com/drive/f
 
 #### Image Style Transfer
 ```
-CUDA_VISIBLE_DEVICES=0 python image_style.py --mode photorealistic --content data/content/01.jpg  --style data/style/01.jpg
+CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode photorealistic --content data/content/01.jpg  --style data/style/01.jpg
 ``` 
 
 * `mode`: photorealistic or artistic.
@@ -52,7 +52,7 @@ CUDA_VISIBLE_DEVICES=0 python image_style.py --mode photorealistic --content dat
 
 #### Video Style Transfer
 ```
-CUDA_VISIBLE_DEVICES=0 python video_style.py --mode photorealistic --video data/content/03.avi  --style data/style/03.jpeg
+CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode photorealistic --video data/content/03.avi  --style data/style/03.jpeg
 ``` 
 
 * `mode`: photorealistic or artistic.
