@@ -38,6 +38,7 @@ parser.add_argument('--temporal_weight', type=float, default=60)
 parser.add_argument('--training_iterations', type=int, default=160000)
 parser.add_argument('--fine_tuning_iterations', type=int, default=10000)
 parser.add_argument("--resume", action="store_true", default=False)
+parser.add_argument('--resume_iter', type=int, default=-1)
 
 # Log
 parser.add_argument('--logs_directory', default='logs', help='Directory to log')
@@ -102,7 +103,8 @@ if args.resume:
     state_dict = torch.load(os.path.join(checkpoint_directory, "last.pt"))
     RevNetwork.load_state_dict(state_dict['state_dict'])
     optimizer.load_state_dict(state_dict['optimizer'])
-    print('Resume from %s' % os.path.join(checkpoint_directory, "last.pt"))
+    current_iter = args.resume_iter
+    print('Resume from %s. Resume iter is %d' % (os.path.join(checkpoint_directory, "last.pt"), args.resume_iter))
 
 
 # Loss
@@ -128,7 +130,7 @@ while current_iter < total_iterations:
 
     images_a, images_b = images_a['img'].to(device), images_b['img'].to(device)
 
-    # Training
+    # Optimizer
     adjust_learning_rate(optimizer, args.lr, args.lr_decay, current_iter)
     optimizer.zero_grad()
 

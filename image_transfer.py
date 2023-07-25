@@ -21,6 +21,7 @@ parser.add_argument('--style', type=str, default='data/style/01.jpg')
 
 parser.add_argument('--out_dir', type=str, default="output")
 parser.add_argument('--max_size', type=int, default=1280)
+parser.add_argument('--alpha_c', type=float, default=None)
 
 # segmentation
 parser.add_argument('--content_seg', type=str, default=None)
@@ -64,7 +65,6 @@ content = Image.open(args.content).convert('RGB')
 style = Image.open(args.style).convert('RGB')
 
 ori_csize = content.size
-transform = transforms.Resize((ori_csize[1], ori_csize[0]), interpolation=Image.BICUBIC)
 
 content = img_resize(content, args.max_size, down_scale=RevNetwork.down_scale)
 style = img_resize(style, args.max_size, down_scale=RevNetwork.down_scale)
@@ -144,7 +144,12 @@ with torch.no_grad():
     z_s = RevNetwork(style, forward=True)
 
     # Transfer
-    z_cs = cwct.transfer(z_c, z_s, content_seg, style_seg)
+    if args.alpha_c is not None and content_seg is None and style_seg is None:
+        # interpolation between content and style, mask is not supported
+        assert 0.0 <= args.alpha_c <= 1.0
+        z_cs = cwct.interpolation(z_c, styl_feat_list=[z_s], alpha_s_list=[1 - args.alpha_c], alpha_c=args.alpha_c)
+    else:
+        z_cs = cwct.transfer(z_c, z_s, content_seg, style_seg)
 
     # Backward inference
     stylized = RevNetwork(z_cs, forward=False)
@@ -158,7 +163,7 @@ sn = os.path.basename(args.style)
 file_name = "%s_%s.png" % (cn.split(".")[0], sn.split(".")[0])
 path = os.path.join(out_dir, file_name)
 
-stylized = transform(stylized)
+# stylized = transforms.Resize((ori_csize[1], ori_csize[0]), interpolation=Image.BICUBIC)(stylized)    # Resize to original size
 grid = utils.make_grid(stylized.data, nrow=1, padding=0)
 ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
 out_img = Image.fromarray(ndarr)

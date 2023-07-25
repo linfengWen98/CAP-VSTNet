@@ -145,8 +145,6 @@ class cWCT(torch.nn.Module):
         self.label_set = np.unique(cont_seg)
         self.label_indicator = np.zeros(max_label)
         for l in self.label_set:
-            # if l==0:
-            #   continue
             is_valid = lambda a, b: a > 10 and b > 10 and a / b < 100 and b / a < 100
             o_cont_mask = np.where(cont_seg.reshape(cont_seg.shape[0] * cont_seg.shape[1]) == l)
             o_styl_mask = np.where(styl_seg.reshape(styl_seg.shape[0] * styl_seg.shape[1]) == l)
@@ -166,12 +164,67 @@ class cWCT(torch.nn.Module):
             return None
         return torch.LongTensor(mask[0])
 
-    def interpolation(self):
-        # To do
-        return
+    def interpolation(self, cont_feat, styl_feat_list, alpha_s_list, alpha_c=0.0):
+        """
+        :param cont_feat: Tensor [B, N, cH, cW]
+        :param styl_feat_list: List [Tensor [B, N, _, _], Tensor [B, N, _, _], ...]
+        :param alpha_s_list: List [float, float, ...]
+        :param alpha_c: float
+        :return color_fea: Tensor [B, N, cH, cW]
+        """
+        assert len(styl_feat_list) == len(alpha_s_list)
+
+        B, N, cH, cW = cont_feat.shape
+        cont_feat = cont_feat.reshape(B, N, -1)
+
+        in_dtype = cont_feat.dtype
+        if self.use_double:
+            cont_feat = cont_feat.double()
+
+        c_mean = torch.mean(cont_feat, -1)
+        cont_feat = cont_feat - c_mean.unsqueeze(-1).expand_as(cont_feat)
+
+        cont_conv = (cont_feat @ cont_feat.transpose(-1, -2)).div(cont_feat.shape[-1] - 1)  # interpolate Conv works well
+        inv_Lc = self.cholesky_dec(cont_conv, invert=True)  # interpolate L seems to be slightly better
+
+        whiten_c = inv_Lc @ cont_feat
+
+        # First interpolate between style_A, style_B, style_C, ...
+        mix_Ls = torch.zeros_like(inv_Lc)   # [B, N, N]
+        mix_s_mean = torch.zeros_like(c_mean)   # [B, N]
+        for styl_feat, alpha_s in zip(styl_feat_list, alpha_s_list):
+            assert styl_feat.shape[0] == B and styl_feat.shape[1] == N
+            styl_feat = styl_feat.reshape(B, N, -1)
+
+            if self.use_double:
+                styl_feat = styl_feat.double()
+
+            s_mean = torch.mean(styl_feat, -1)
+            styl_feat = styl_feat - s_mean.unsqueeze(-1).expand_as(styl_feat)
+
+            styl_conv = (styl_feat @ styl_feat.transpose(-1, -2)).div(styl_feat.shape[-1] - 1)  # interpolate Conv works well
+            Ls = self.cholesky_dec(styl_conv, invert=False)  # interpolate L seems to be slightly better
+
+            mix_Ls += Ls * alpha_s
+            mix_s_mean += s_mean * alpha_s
+
+        # Second interpolate between content and style_mix
+        if alpha_c != 0.0:
+            Lc = self.cholesky_dec(cont_conv, invert=False)
+            mix_Ls = mix_Ls * (1-alpha_c) + Lc * alpha_c
+            mix_s_mean = mix_s_mean * (1-alpha_c) + c_mean * alpha_c
+
+        color_fea = mix_Ls @ whiten_c
+        color_fea = color_fea + mix_s_mean.unsqueeze(-1).expand_as(color_fea)
+
+        if self.use_double:
+            color_fea = color_fea.to(in_dtype)
+
+        return color_fea.reshape(B, N, cH, cW)
 
 
 if __name__ == '__main__':
+    # transfer
     c = torch.rand((2, 16, 512, 256))
     s = torch.rand((2, 16, 64, 128))
 
@@ -179,3 +232,13 @@ if __name__ == '__main__':
     cs = cwct.transfer(c, s)
     print(cs.shape)
 
+
+    # interpolation
+    c = torch.rand((1, 16, 512, 256))
+    s_list = [torch.rand((1, 16, 64, 128)) for _ in range(4)]
+    alpha_s_list = [0.25 for _ in range(4)]     # interpolate between style_A, style_B, style_C, ...
+    alpha_c = 0.5   # interpolate between content and style_mix if alpha_c!=0.0
+
+    cwct = cWCT(use_double=True)
+    cs = cwct.interpolation(c, s_list, alpha_s_list, alpha_c)
+    print(cs.shape)

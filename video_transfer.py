@@ -19,11 +19,12 @@ parser.add_argument('--mode', type=str, default='photorealistic')
 parser.add_argument('--ckpoint', type=str, default='checkpoints/photo_video.pt')
 
 # data
-parser.add_argument('--video', type=str, default='data/content/02.avi')
-parser.add_argument('--style', type=str, default='data/style/02.jpeg')
+parser.add_argument('--video', type=str, default='data/content/03.avi')
+parser.add_argument('--style', type=str, default='data/style/03.jpeg')
 
 parser.add_argument('--out_dir', type=str, default="output")
 parser.add_argument('--max_size', type=int, default=1280)
+parser.add_argument('--alpha_c', type=float, default=None)
 parser.add_argument('--fps', type=int, default=10)
 
 # segmentation
@@ -94,12 +95,12 @@ fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 path = os.path.join(out_dir, save_video_file)
 save_video = cv2.VideoWriter(path, fourcc, args.fps, (video_width, video_height))
 
-if args.save_seg_label:
+if args.save_seg_label and args.auto_seg:
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     path_label = os.path.join(out_dir, "segmentation", "content_seg_label.avi")
     save_video_label = cv2.VideoWriter(path_label, fourcc, args.fps, (video_width, video_height))
 
-if args.save_seg_color:
+if args.save_seg_color and args.auto_seg:
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     path_color = os.path.join(out_dir, "segmentation", "content_seg_color.avi")
     save_video_color = cv2.VideoWriter(path_color, fourcc, args.fps, (video_width, video_height))
@@ -169,10 +170,10 @@ for i in tqdm(range(len(frame_list)), desc="Video Processing"):
         content_seg = np.asarray(content_seg).astype(np.uint8)
 
         # Save the class label of segmentation results
-        if args.save_seg_label:
+        if args.save_seg_label and args.auto_seg:
             save_video_label.write(cv2.resize(content_seg, (video_width, video_height), interpolation=cv2.INTER_NEAREST))
         # Save the visualization of segmentation results
-        if args.save_seg_color:
+        if args.save_seg_color and args.auto_seg:
             content_seg_color = np.zeros((content_seg.shape[0], content_seg.shape[1], 3), dtype=np.uint8)
             for label, color in enumerate(palette):
                 content_seg_color[content_seg == label, :] = color  # RGB
@@ -194,7 +195,12 @@ for i in tqdm(range(len(frame_list)), desc="Video Processing"):
         z_s = RevNetwork(style, forward=True)
 
         # Transfer
-        z_cs = cwct.transfer(z_c, z_s, content_seg, style_seg)
+        if args.alpha_c is not None and content_seg is None and style_seg is None:
+            # interpolation between content and style, mask is not supported
+            assert 0.0 <= args.alpha_c <= 1.0
+            z_cs = cwct.interpolation(z_c, styl_feat_list=[z_s], alpha_s_list=[1 - args.alpha_c], alpha_c=args.alpha_c)
+        else:
+            z_cs = cwct.transfer(z_c, z_s, content_seg, style_seg)
 
         # Backward inference
         stylized = RevNetwork(z_cs, forward=False)
@@ -209,10 +215,10 @@ for i in tqdm(range(len(frame_list)), desc="Video Processing"):
 
 
 
-if args.save_seg_label:
+if args.save_seg_label and args.auto_seg:
     save_video_label.release()
     print("Save input video segmentation label at %s" % path_label)
-if args.save_seg_color:
+if args.save_seg_color and args.auto_seg:
     save_video_color.release()
     print("Save input video segmentation color at %s" % path_color)
 save_video.release()

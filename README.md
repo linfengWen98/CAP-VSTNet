@@ -1,6 +1,6 @@
 # CAP-VSTNet: Content Affinity Preserved Versatile Style Transfer (CVPR 2023)
 
-### [**Paper**](https://arxiv.org/abs/2303.17867) | [**Video Demo**](https://youtu.be/Mks9_xQNE_8)
+### [**CVPR Virtual**](https://cvpr2023.thecvf.com/virtual/2023/poster/22374) | [**Paper**](https://arxiv.org/abs/2303.17867) | [**Video**](https://youtu.be/Mks9_xQNE_8)
 
 ![](assets/teaser.webp)
 
@@ -19,7 +19,7 @@ It's compatible with ```pytorch>=1.0```. An example (without using semantic segm
 conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 pip install opencv-python scipy tqdm
 ``` 
-if you want to style transfer with automatically generated semantic mask, an example using segmentation model [SegFormer](https://github.com/NVlabs/SegFormer) (test on Linux):
+If you want to transfer style with automatically generated semantic mask, an example using segmentation model [SegFormer](https://github.com/NVlabs/SegFormer) (test on Linux):
 ```
 conda create --name capvst python=3.8 -y
 conda activate capvst
@@ -38,7 +38,10 @@ Download the pre-trained weight ([google drive](https://drive.google.com/drive/f
 
 #### Image Style Transfer
 ```
-CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode photorealistic --content data/content/01.jpg  --style data/style/01.jpg
+CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode photorealistic --ckpoint checkpoints/photo_image.pt --content data/content/01.jpg  --style data/style/01.jpg
+``` 
+```
+CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode artistic --ckpoint checkpoints/art_image.pt --content data/content/02.jpg  --style data/style/02.png
 ``` 
 
 * `mode`: photorealistic or artistic.
@@ -49,10 +52,16 @@ CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode photorealistic --content 
 * `content_seg` (optional): path for the manually generated content segmentation if `auto_seg=False`.
 * `style_seg` (optional): path for the manually generated style segmentation if `auto_seg=False`.
 * `max_size`: maximum output image size of long edge.
+* `alpha_c`: interpolation between content and style if segmentation is None.
+
+Note: Using the video model ckpoint also works. If content_seg and style_seg are provided, it's recommended to use lossless files (e.g., png) as the compression files (e.g., jpg) may have noise label.
 
 #### Video Style Transfer
 ```
-CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode photorealistic --video data/content/03.avi  --style data/style/03.jpeg
+CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode photorealistic --ckpoint checkpoints/photo_video.pt --video data/content/03.avi  --style data/style/03.jpeg
+``` 
+```
+CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode artistic --ckpoint checkpoints/art_video.pt --video data/content/04.avi  --style data/style/04.jpg
 ``` 
 
 * `mode`: photorealistic or artistic.
@@ -61,9 +70,10 @@ CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode photorealistic --video da
 * `style`: path for the style image.
 * `auto_seg`: set `True` to use segmentation model (e.g. SegFormer).
 * `max_size`: maximum output video size of long edge.
+* `alpha_c`: interpolation between content and style if segmentation is None.
 * `fps`: video frames per second
 
-Set `--auto_seg True` to automatically generate semantic segmentation for better stylization effects. For more information on how to automatically or manually generate semantic segmentation, please refer to [here](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md) (where we get inspiration and benefit a lot from).
+Note: Set `--auto_seg True` to automatically generate semantic segmentation for better stylization effects. For more information on how to automatically or manually generate semantic segmentation, please refer to [here](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md) (where we get inspiration and benefit a lot from).
 
 ![](assets/video_transfer_segmentaiton.webp)
 
@@ -72,8 +82,11 @@ Download the pre-trained VGG19 ([google drive](https://drive.google.com/drive/fo
 
 Download dataset [MS_COCO](http://images.cocodataset.org/zips/train2014.zip) and [WikiArt](https://www.wikiart.org/).
 ```
-/directory/img_1.jpg
-/directory/img_2.jpg
+/path_to_dir/img_1.jpg
+/path_to_dir/img_2.png
+...
+/path_to_dir/sub_dirA/img_3.jpg
+/path_to_dir/sub_dirB/sub_dirC/img_4.png
 ...
 ```
 
@@ -85,7 +98,7 @@ CUDA_VISIBLE_DEVICES=0 python train.py --mode photorealistic --train_content /pa
 ```
 CUDA_VISIBLE_DEVICES=0 python train.py --mode artistic --train_content /path/to/COCO/directory  --train_style /path/to/WikiArt/directory --lap_weight 1 --rec_weight 1
 ``` 
-Check log images at ```logs/XXX/index.html```. After training, you will have the checkpoints of image model and video model in ```checkpoints``` directory.
+Check log images at ```logs/XXX/index.html```. After training, you will have the checkpoints of image model and video model in ```logs/XXX/checkpoints``` directory.
 
 
 ## Results
