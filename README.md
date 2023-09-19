@@ -1,6 +1,6 @@
 # CAP-VSTNet: Content Affinity Preserved Versatile Style Transfer (CVPR 2023)
 
-### [**CVPR Virtual**](https://cvpr2023.thecvf.com/virtual/2023/poster/22374) | [**Paper**](https://arxiv.org/abs/2303.17867) | [**Video**](https://youtu.be/Mks9_xQNE_8)
+### [**Paper**](https://arxiv.org/abs/2303.17867) | [**Poster**](https://cvpr2023.thecvf.com/media/PosterPDFs/CVPR%202023/22374.png?t=1685361737.0440488) | [**Video 1**](https://youtu.be/Mks9_xQNE_8) | [**Video 2**](https://youtu.be/OTJ1wEe29Hc)
 
 ![](assets/teaser.webp)
 
@@ -73,14 +73,14 @@ CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode artistic --ckpoint checkp
 * `alpha_c`: interpolation between content and style if segmentation is None.
 * `fps`: video frames per second
 
-Note: Set `--auto_seg True` to automatically generate semantic segmentation for better stylization effects. For more information on how to automatically or manually generate semantic segmentation, please refer to [here](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md) (where we get inspiration and benefit a lot from).
+Note: Set `--auto_seg True` to automatically generate semantic segmentation for better stylization effects. For more information on how to automatically or manually generate semantic segmentation, please refer to [Link](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md) (where we get inspiration and benefit a lot from).
 
 ![](assets/video_transfer_segmentaiton.webp)
 
 ## Train
 Download the pre-trained VGG19 ([google drive](https://drive.google.com/drive/folders/19xlQVprXdPJ9bhfnVEJ1ruVST-NuIlIE?usp=share_link)) and save at ```checkpoints/vgg_normalised.pth```. 
 
-Download dataset [MS_COCO](http://images.cocodataset.org/zips/train2014.zip) and [WikiArt](https://www.wikiart.org/).
+Download dataset [MS_COCO](http://images.cocodataset.org/zips/train2014.zip), [WikiArt](https://www.wikiart.org/) or your own dataset.
 ```
 /path_to_dir/img_1.jpg
 /path_to_dir/img_2.png

@@ -39,7 +39,7 @@ def make_dataset(dir):
 
 class ImageFolder(data.Dataset):
 
-    def __init__(self, root, transform=None, use_lap=False):
+    def __init__(self, root, transform=None, use_lap=False, win_rad=1):
         imgs = []
         if isinstance(root, list):
             for r in root:
@@ -54,7 +54,10 @@ class ImageFolder(data.Dataset):
 
         self.transform = transform
         self.to_tensor = transforms.Compose([transforms.ToTensor()])
+
+
         self.use_lap = use_lap
+        self.win_rad = win_rad  # Matting Laplacian params
 
     def __getitem__(self, index):
         try:
@@ -67,7 +70,7 @@ class ImageFolder(data.Dataset):
             img = self.transform(img)
 
         if self.use_lap:
-            laplacian_m = compute_laplacian(img)
+            laplacian_m = compute_laplacian(img, win_rad=self.win_rad)
         else:
             laplacian_m = None
 
@@ -111,12 +114,12 @@ def collate_fn(batch):
     return {'img': img, 'laplacian_m': laplacian_m}
 
 
-def get_data_loader_folder(input_folder, batch_size, new_size=288, height=256, width=256, use_lap=False, num_workers=None):
+def get_data_loader_folder(input_folder, batch_size, new_size=288, height=256, width=256, use_lap=False, win_rad=1, num_workers=None):
     transform_list = []
     transform_list = [transforms.RandomCrop((height, width))] + transform_list
     transform_list = [transforms.Resize(new_size)] + transform_list
     transform = transforms.Compose(transform_list)
-    dataset = ImageFolder(input_folder, transform=transform, use_lap=use_lap)
+    dataset = ImageFolder(input_folder, transform=transform, use_lap=use_lap, win_rad=win_rad)
     
     if num_workers is None:
         num_workers = 2*batch_size

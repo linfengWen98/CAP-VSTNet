@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-
+from torch.nn import functional as F
 
 
 def split(x):
@@ -42,6 +42,30 @@ def unsqueeze(x, size=2):
     return x.reshape(bs, new_d, h * size, w * size)
 
 
+class InvConv2d(nn.Module):
+    def __init__(self, channel):
+        """ Invertible MLP """
+        super().__init__()
+
+        weight = torch.randn(channel, channel)
+        bias = torch.randn(1, channel, 1, 1)
+        q, _ = torch.linalg.qr(weight)
+        weight = q.unsqueeze(2).unsqueeze(3)
+        self.weight = nn.Parameter(weight)
+        self.bias = nn.Parameter(bias)
+
+    def forward(self, x):
+        _, _, height, width = x.shape
+        out = F.conv2d(x, self.weight)
+        return out + self.bias
+
+    def inverse(self, y):
+        y = y - self.bias
+        return F.conv2d(
+            y, self.weight.squeeze().inverse().unsqueeze(2).unsqueeze(3)
+        )
+
+
 class residual_block(nn.Module):
     def __init__(self, channel, stride=1, mult=4, kernel=3):
         super().__init__()
@@ -52,6 +76,16 @@ class residual_block(nn.Module):
             in_ch = channel
         else:
             in_ch = channel // 4
+
+        # # Inverted residuals
+        # self.conv = nn.Sequential(
+        #     nn.Conv2d(in_ch, channel//mult, kernel_size=1, stride=1, padding=0, bias=True),
+        #     nn.ReLU(inplace=True),
+        #     nn.ReflectionPad2d(pad),
+        #     nn.Conv2d(channel // mult, channel // mult, kernel_size=kernel, stride=stride, padding=0, groups=channel//mult, bias=True),
+        #     nn.ReLU(inplace=True),
+        #     nn.Conv2d(channel // mult, channel, kernel_size=1, stride=1, padding=0, bias=True)
+        # )
 
         self.conv = nn.Sequential(
             nn.ReflectionPad2d(pad),

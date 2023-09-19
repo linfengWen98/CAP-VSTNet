@@ -198,7 +198,7 @@ for i in tqdm(range(len(frame_list)), desc="Video Processing"):
         if args.alpha_c is not None and content_seg is None and style_seg is None:
             # interpolation between content and style, mask is not supported
             assert 0.0 <= args.alpha_c <= 1.0
-            z_cs = cwct.interpolation(z_c, styl_feat_list=[z_s], alpha_s_list=[1 - args.alpha_c], alpha_c=args.alpha_c)
+            z_cs = cwct.interpolation(z_c, styl_feat_list=[z_s], alpha_s_list=[1.0], alpha_c=args.alpha_c)
         else:
             z_cs = cwct.transfer(z_c, z_s, content_seg, style_seg)
 

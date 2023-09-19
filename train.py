@@ -23,7 +23,9 @@ parser.add_argument('--train_style', default='/home/wenlinfeng/Downloads/unlabel
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--new_size', type=int, default=512)
 parser.add_argument('--crop_size', type=int, default=256)
+
 parser.add_argument('--use_lap', type=bool, default=True)
+parser.add_argument('--win_rad', type=int, default=1, help='The larger the value, the more detail in the generated image and the higher the CPU and memory requirements (proportional to the win_rad**2)')
 
 # Training options
 parser.add_argument('--lr', type=float, default=1e-4)
@@ -65,7 +67,8 @@ batch_size = args.batch_size
 num_workers = args.batch_size
 new_size = args.new_size
 crop_size = args.crop_size
-train_loader_a = get_data_loader_folder(args.train_content, batch_size, new_size, crop_size, crop_size, use_lap=True)
+win_rad = args.win_rad
+train_loader_a = get_data_loader_folder(args.train_content, batch_size, new_size, crop_size, crop_size, use_lap=True, win_rad=win_rad)
 train_loader_b = get_data_loader_folder(args.train_style, batch_size, new_size, crop_size, crop_size, use_lap=False)
 
 
