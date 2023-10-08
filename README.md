@@ -14,12 +14,12 @@ Three ways of using CAP-VSTNet to stylize image/video.
 
 
 ## Requirements
-It's compatible with ```pytorch>=1.0```. An example (without using semantic segmentation model): 
+1.It's compatible with ```pytorch>=1.0```. An example (without using semantic segmentation model): 
 ```
 conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 pip install opencv-python scipy tqdm
 ``` 
-If you want to transfer style with automatically generated semantic mask, an example using segmentation model [SegFormer](https://github.com/NVlabs/SegFormer) (test on Linux):
+2.If you want to transfer style with automatically generated semantic mask, an example using segmentation model [SegFormer](https://github.com/NVlabs/SegFormer) (test on Linux):
 ```
 conda create --name capvst python=3.8 -y
 conda activate capvst
@@ -30,11 +30,11 @@ pip install timm opencv-python ipython attrs scipy
 cd models/segmentation & git clone https://github.com/NVlabs/SegFormer.git
 cd SegFormer && pip install -e . --user
 ```
-Then, download the pre-trained weight ```segformer.b5.640x640.ade.160k.pth``` ([google drive](https://drive.google.com/drive/folders/1GAku0G0iR9DsBxCbfENWMJ27c5lYUeQA?usp=sharing)) and save at ```models/segmentation/SegFormer/segformer.b5.640x640.ade.160k.pth```.
+Then, download the pre-trained weight ```segformer.b5.640x640.ade.160k.pth``` ([google drive](https://drive.google.com/drive/folders/1zqKiC3m9XzaFX09UNufK79HntpTpx0KZ) | [onedrive](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/xieenze_connect_hku_hk/Ept_oetyUGFCsZTKiL_90kUBy5jmPV65O5rJInsnRCDWJQ?e=CvGohw)) and save at ```models/segmentation/SegFormer/segformer.b5.640x640.ade.160k.pth```.
 
 
 ## Test
-Download the pre-trained weight ([google drive](https://drive.google.com/drive/folders/19xlQVprXdPJ9bhfnVEJ1ruVST-NuIlIE?usp=share_link)).
+Download the pre-trained weight in ```checkpoints``` directory ([google drive](https://drive.google.com/drive/folders/19xlQVprXdPJ9bhfnVEJ1ruVST-NuIlIE?usp=share_link)).
 
 #### Image Style Transfer
 ```
@@ -81,12 +81,16 @@ Note: Set `--auto_seg True` to automatically generate semantic segmentation for 
 Download the pre-trained VGG19 ([google drive](https://drive.google.com/drive/folders/19xlQVprXdPJ9bhfnVEJ1ruVST-NuIlIE?usp=share_link)) and save at ```checkpoints/vgg_normalised.pth```. 
 
 Download dataset [MS_COCO](http://images.cocodataset.org/zips/train2014.zip), [WikiArt](https://www.wikiart.org/) or your own dataset.
+You need to provide two folders for params ```--train_content``` and ```--train_style``` respectively. And the two folders can be the same.
+
+An example of how a folder can look like. 
 ```
 /path_to_dir/img_1.jpg
 /path_to_dir/img_2.png
+/path_to_dir/img_3.png
 ...
-/path_to_dir/sub_dirA/img_3.jpg
-/path_to_dir/sub_dirB/sub_dirC/img_4.png
+/path_to_dir/sub_dirA/img_4.jpg
+/path_to_dir/sub_dirB/sub_dirC/img_5.png
 ...
 ```
 
@@ -134,6 +138,10 @@ An example of 4K images stylization
 </p>
 
 
+## Flow and Temporal Loss
+See [issues#11](https://github.com/linfengWen98/CAP-VSTNet/issues/11#issuecomment-1749932696)
+
+
 ## Citation
 ```
 @inproceedings{wen2023cap,
@@ -144,6 +152,7 @@ An example of 4K images stylization
   year={2023}
 }
 ```
+
 
 ## Acknowledgement
 We thank the great work [PhotoWCT](https://github.com/NVIDIA/FastPhotoStyle/blob/master/TUTORIAL.md), [LinearWCT](https://github.com/sunshineatnoon/LinearStyleTransfer) and [ArtFlow](https://github.com/pkuanjie/ArtFlow).
