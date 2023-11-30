@@ -182,8 +182,8 @@ while current_iter < total_iterations:
     if args.temporal_weight > 0 and current_iter > args.training_iterations:
         SecondFrame, ForwardFlow = Temporal_loss.GenerateFakeData(images_a)
         z_c2 = RevNetwork(SecondFrame, forward=True)
-        z_cs2 = cwct.transfer(z_c2, z_c)
-        stylizedSecondFrame = RevNetwork(z_c2.clone(), forward=False)
+        z_cs2 = cwct.transfer(z_c2, z_s)
+        stylizedSecondFrame = RevNetwork(z_cs2, forward=False)
 
         loss_tmp, FakeStyledSecondFrame_1 = Temporal_loss(stylized, stylizedSecondFrame, ForwardFlow)
 
