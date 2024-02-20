@@ -45,12 +45,12 @@ CUDA_VISIBLE_DEVICES=0 python image_transfer.py --mode artistic --ckpoint checkp
 ``` 
 
 * `mode`: photorealistic or artistic.
-* `ckpoint`: path for the model checkpoint.
-* `content`: path for the content image.
-* `style`: path for the style image.
+* `ckpoint`: path to the model checkpoint.
+* `content`: path to the content image.
+* `style`: path to the style image.
 * `auto_seg`: set `True` to use segmentation model (e.g. SegFormer).
-* `content_seg` (optional): path for the manually generated content segmentation if `auto_seg=False`.
-* `style_seg` (optional): path for the manually generated style segmentation if `auto_seg=False`.
+* `content_seg` (optional): path to the manually generated content segmentation if `auto_seg=False`.
+* `style_seg` (optional): path to the manually generated style segmentation if `auto_seg=False`.
 * `max_size`: maximum output image size of long edge.
 * `alpha_c`: interpolation between content and style if segmentation is None.
 
@@ -65,9 +65,9 @@ CUDA_VISIBLE_DEVICES=0 python video_transfer.py --mode artistic --ckpoint checkp
 ``` 
 
 * `mode`: photorealistic or artistic.
-* `ckpoint`: path for the model checkpoint.
-* `video`: path for the input video or frame directory.
-* `style`: path for the style image.
+* `ckpoint`: path to the model checkpoint.
+* `video`: path to the input video or frame directory.
+* `style`: path to the style image.
 * `auto_seg`: set `True` to use segmentation model (e.g. SegFormer).
 * `max_size`: maximum output video size of long edge.
 * `alpha_c`: interpolation between content and style if segmentation is None.
@@ -138,7 +138,7 @@ An example of 4K images stylization
 </p>
 
 
-## Flow and Temporal Loss
+## Flow, Temporal Loss and Heatmap
 See [issues#11](https://github.com/linfengWen98/CAP-VSTNet/issues/11#issuecomment-1749932696)
 
 

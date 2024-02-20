@@ -91,7 +91,7 @@ optimizer = torch.optim.Adam(RevNetwork.parameters(), lr=args.lr)
 
 # Transfer module
 from models.cWCT import cWCT
-cwct = cWCT()
+cwct = cWCT(train_mode=True)
 
 
 # VGG for style loss
@@ -142,7 +142,13 @@ while current_iter < total_iterations:
     z_s = RevNetwork(images_b, forward=True)
 
     # Transfer
-    z_cs = cwct.transfer(z_c, z_s)
+    try:
+        z_cs = cwct.transfer(z_c, z_s)
+    except:
+        print('Cholesky Decomposition fails. Gradient infinity. Skip current batch.')
+        with open(logs_directory + "/loss.log", "a") as log_file:
+            log_file.write('Cholesky Decomposition fails. Gradient infinity. Skip current batch. \n')
+        continue
 
     # Backward inference
     stylized = RevNetwork(z_cs, forward=False)
@@ -154,7 +160,15 @@ while current_iter < total_iterations:
     # Cycle reconstruction
     if args.rec_weight > 0:
         z_cs = RevNetwork(stylized, forward=True)
-        z_csc = cwct.transfer(z_cs, z_c)
+
+        try:
+            z_csc = cwct.transfer(z_cs, z_c)
+        except:
+            print('Cholesky Decomposition fails. Gradient infinity. Skip current batch.')
+            with open(logs_directory + "/loss.log", "a") as log_file:
+                log_file.write('Cholesky Decomposition fails. Gradient infinity. Skip current batch. \n')
+            continue
+
         rec = RevNetwork(z_csc, forward=False)
         loss_rec = l1_loss(rec, images_a)
     else:
@@ -182,7 +196,15 @@ while current_iter < total_iterations:
     if args.temporal_weight > 0 and current_iter > args.training_iterations:
         SecondFrame, ForwardFlow = Temporal_loss.GenerateFakeData(images_a)
         z_c2 = RevNetwork(SecondFrame, forward=True)
-        z_cs2 = cwct.transfer(z_c2, z_s)
+
+        try:
+            z_cs2 = cwct.transfer(z_c2, z_s)
+        except:
+            print('Cholesky Decomposition fails. Gradient infinity. Skip current batch.')
+            with open(logs_directory + "/loss.log", "a") as log_file:
+                log_file.write('Cholesky Decomposition fails. Gradient infinity. Skip current batch. \n')
+            continue
+
         stylizedSecondFrame = RevNetwork(z_cs2, forward=False)
 
         loss_tmp, FakeStyledSecondFrame_1 = Temporal_loss(stylized, stylizedSecondFrame, ForwardFlow)
@@ -218,23 +240,27 @@ while current_iter < total_iterations:
 
         # Log sample
         if (current_iter + 1) % args.image_save_iter == 0:
+            cwct.train_mode = False
             with torch.no_grad():
                 index = torch.randint(low=0, high=len(train_loader_a.dataset), size=[args.display_size])
                 train_display_images_a = torch.stack([train_loader_a.dataset[i]['img'] for i in index])
                 index = torch.randint(low=0, high=len(train_loader_b.dataset), size=[args.display_size])
                 train_display_images_b = torch.stack([train_loader_b.dataset[i]['img'] for i in index])
                 train_image_outputs = RevNetwork.sample(cwct, train_display_images_a, train_display_images_b, device)
+            cwct.train_mode = True
             write_2images(train_image_outputs, args.display_size, image_directory, 'train_%08d' % (current_iter + 1))
             # HTML
             write_html(logs_directory + "/index.html", current_iter + 1, args.image_save_iter, 'images')
 
         if (current_iter + 1) % args.image_display_iter == 0:
+            cwct.train_mode = False
             with torch.no_grad():
                 index = torch.randint(low=0, high=len(train_loader_a.dataset), size=[args.display_size])
                 train_display_images_a = torch.stack([train_loader_a.dataset[i]['img'] for i in index])
                 index = torch.randint(low=0, high=len(train_loader_b.dataset), size=[args.display_size])
                 train_display_images_b = torch.stack([train_loader_b.dataset[i]['img'] for i in index])
                 image_outputs = RevNetwork.sample(cwct, train_display_images_a, train_display_images_b, device)
+            cwct.train_mode = True
             write_2images(image_outputs, args.display_size, image_directory, 'train_current')
 
         # Save network weights

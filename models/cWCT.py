@@ -4,10 +4,11 @@ from PIL import Image
 
 
 class cWCT(torch.nn.Module):
-    def __init__(self, eps=2e-5, use_double=False):
+    def __init__(self, eps=2e-5, use_double=False, train_mode=False):
         super().__init__()
         self.eps = eps
         self.use_double = use_double
+        self.train_mode = train_mode
 
     def transfer(self, cont_feat, styl_feat, cmask=None, smask=None):
         if cmask is None or smask is None:
@@ -99,6 +100,12 @@ class cWCT(torch.nn.Module):
             L = cholesky(conv)
         except RuntimeError:
             # print("Warning: Cholesky Decomposition fails")
+
+            # train
+            if self.train_mode:
+                raise ('Cholesky Decomposition fails. Gradient infinity.')
+
+            # eval
             iden = torch.eye(conv.shape[-1]).to(conv.device)
             eps = self.eps
             while True:
