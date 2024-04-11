@@ -4,7 +4,7 @@ from PIL import Image
 
 
 class cWCT(torch.nn.Module):
-    def __init__(self, eps=2e-5, use_double=False, train_mode=False):
+    def __init__(self, eps=2e-5, use_double=True, train_mode=False):
         super().__init__()
         self.eps = eps
         self.use_double = use_double
